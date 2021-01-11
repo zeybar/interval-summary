@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>vuetest</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- {{ text }} -->
+        <!-- <my-test @test="this.alert(1)" @click="this.alert(1)"></my-test> -->
+        <input type="text" @keydown.b.v.exact="test">
+        <p @click.ctrl="test">1213</p>
+    </div>
+
+    <script src="./vue/dist/vue.js"></script>
+    <script>
+       var myVueApp = new Vue({
+           data() {
+               return {
+                   text: '123',
+               }
+           },
+           methods: {
+               test() {
+                   console.log('test123')
+               }
+           },
+           el: '#app',
+        //    components: {
+        //        'my-test': {
+        //            render: function(_c) {
+        //                return _c('h1', {
+        //                    on: {
+        //                        'click': function(e) {
+        //                             myVueApp.$emit('test');
+        //                        }
+        //                    }
+        //                }, ['testtest111'])
+        //            }
+        //        }
+        //    }
+       });
+    </script>
+</body>
+</html>

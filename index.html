@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>自动滚动</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        #list li {
+            padding: 20px 10px;
+            border-bottom: 1px solid #ccc;
+            text-align: right;
+        }
+        #list li button {
+            padding: 10px;
+            color: #000;
+        }
+        #list li button.clicked {
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <ul id="list">
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <!-- <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li>
+        <li><button>我是按钮</button></li> -->
+    </ul>
+
+    <script>
+        window.scrollTo(0, 0);
+        let i = 1;
+        const list = document.querySelector('#list');
+        const li = document.querySelectorAll('#list li');
+        list.addEventListener('click', e => {
+            console.log(e.target.nodeName);
+            if (e.target.nodeName.toLowerCase() === 'li') {
+                const btn = e.target.querySelector('button');
+                btn.className = 'clicked';
+            }
+        })
+
+        // 配置监听函数
+        const io = new IntersectionObserver(callback);
+        function callback(entries) {
+            entries.forEach(item => {
+                if (item.isIntersecting) {
+                    // debugger;
+                    item.target.click();
+                    io.unobserve(item.target);
+                }
+            })
+        }
+
+        // 开始监听
+        // li.forEach(iLi => {
+        //     io.observe(iLi);
+        // })
+
+        // let timer = null
+        // clearInterval(timer);
+        // timer = setInterval(() => {
+        //     i++;
+        //     let d = i * 350
+        //     window.scrollTo(0, d)
+
+        //     if (d >= (list.clientHeight - innerHeight)) {
+        //         console.log('到底了，应该清掉定时器');
+        //         const flagMent = document.createDocumentFragment();
+        //         for (let k = 0;k < 10; k++) {
+        //             const li = document.createElement('li');
+        //             li.innerHTML = '<button>我是按钮</button>';
+        //             flagMent.appendChild(li);
+        //         }
+        //         list.appendChild(flagMent);
+
+        //         // clearInterval(timer);
+        //     }
+        // }, 1000)
+    </script>
+</body>
+</html>

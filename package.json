@@ -1,0 +1,16 @@
+{
+  "name": "interval-summary",
+  "version": "1.0.0",
+  "main": "",
+  "publisher": "tianmeng.weng",
+  "license": "MIT",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "description": "",
+  "dependencies": {
+    "vue": "^2.6.12"
+  }
+}
