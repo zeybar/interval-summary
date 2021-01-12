@@ -845,3 +845,27 @@ function render() {
         changeName[name] = e.target.value
     }
 }
+
+
+// 深拷贝
+function deepClone(obj) {
+  let result = Object.create(null)
+
+  if (typeof obj === 'object') {
+    if (Array.isArray(obj)) {
+      result = []
+      for(let o of obj) {
+        result.push(deepClone(o))
+      }
+    } else if (obj === null) {
+      result = null
+    } else {
+      for(let key in obj) {
+        result[key] = deepClone(obj[key])
+      }
+    }
+  } else {
+    result = obj
+  }
+  return result
+}

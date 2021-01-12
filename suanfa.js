@@ -103,7 +103,18 @@ function maxSquare (matrix) {
 // 4. 零钱兑换
 
 // 思路一：递归 动态规划
-
+function coinChange(coins, amount) {
+  const dp = new Array(amount).fill(Infinity)
+  dp[0] = 0
+  for (let i = 0; i < amount; i++) {
+    for(let coin in coins) {
+      if (i <= coin) {
+        dp[i] = Math.min(dp[i - coin] + 1, dp[i])
+      }
+    }
+  }
+  return dp[amount] === Infinity ? -1 : dp[amount]
+}
 
 
 
