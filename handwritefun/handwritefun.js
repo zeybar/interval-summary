@@ -529,6 +529,19 @@ function debounce(fn, wait) {
         }, wait)
     }
 }
+// 防抖立即执行
+function debounce3(fn, wait, immediate) {
+    const timer = null
+    return function() {
+        if (timer) clearTimeout(timer)
+        if (immediate && !timer) {
+            fn.apply(this, [...arguments])
+        }
+        timer = setTimeout(() => {
+            fn.apply(this, [...arguments])
+        }, wait)
+    }
+}
 
 function debounce2(fn, wait) {
     const timer = null
@@ -545,8 +558,40 @@ function debounce2(fn, wait) {
     }
 }
 
-function throttle() {
-    
+// 节流函数
+function throttle(fn, wait) {
+    const prev = 0;
+
+    return function() {
+        let now = Date.now()
+        if (now - prev > wait) {
+            prev = now
+            fn.apply(this, [...arguments])
+        }
+    }
+}
+// 节流加强版
+function throttle(fn, wait) {
+    let prev = 0, timer = null
+    return function() {
+        let now = Date.now()
+        // 判断上次触发的时间和本次触发的时间差是否小于时间间隔
+        if (now - prev > wait) {
+            // 如果小于，则为本次触发操作设立一个新的定时器
+            // 定时器时间结束后执行函数 fn 
+            if (timer) clearTimeout(timer)
+
+            timer = setTimeout(() => {
+                prev = now
+                fn.apply(this, [...arguments])
+            }, wait)
+        } else {
+            // 第一次执行
+            // 或者时间间隔超出了设定的时间间隔，执行函数 fn
+            prev = now
+            fn.apply(this, [...arguments])
+        }
+    }
 }
 
 
@@ -869,3 +914,164 @@ function deepClone(obj) {
   }
   return result
 }
+
+// 深拷贝2
+function deepClone2(obj, hash = new WeakMap()) {
+    const isObject = typeof obj === 'object' && obj != null
+    if (!isObject) return obj
+    if (hash.has(obj)) return hash.get(obj)
+    let target = Array.isArray(obj) ? [...obj] : {...obj}
+    hash.set(obj.target)
+
+    Reflect.ownKeys(obj).forEach(key => {
+        let val = obj[key]
+        if (typeof val === 'object' && val != null) {
+            target[key] = deepClone2(val, hash)
+        } else {
+            target[key] = val
+        }
+    })
+    return target
+}
+
+// 计算帧率
+// 假设动画在时间 A 开始执行，在时间 B 结束，耗时 x ms。而中间 requestAnimationFrame 一共执行了 n 次，则此段动画的帧率大致为：n / (B - A)。
+function caculateFps() {
+    let frame = 0
+    let allFrameCount = 0;
+    let lastFrameTime, lastTime
+    lastFrameTime = lastTime = Date.now()
+
+    const loop = function() {
+        let now = Date.now()
+        let fs = (now - lastFrameTime)
+        let fps = Math.round(1000 / fs)
+
+        lastFrameTime = now
+
+        allFrameCount++
+        frame++
+
+        if (now - lastTime > 1000) {
+            let fps = Math.round((frame * 1000) / (now - lastTime))
+            console.log(`1s内 FPS： `, fps)
+            frame = 0
+            lastTime = now
+        }
+    }
+
+    requestAnimationFrame(loop)
+}
+
+// 计算fps
+function calcFps(debounce = 1000){
+    let lastTime = Date.now();
+    let count = 0; // 记录decounce周期内渲染次数
+    (function loop(){
+        count++
+        const now = Date.now()
+        if( now - lastTime > debounce){
+            const fps = Math.round(count / ((now - lastTime) / 1000))
+            lastTime = now
+            count = 0
+            console.log('fps:', fps)
+        }
+        requestAnimationFrame(loop)
+    })()
+}
+
+
+// 兼容amd cmd commonjs windows的写法
+function(global, factory)(
+    // amd
+    if (typeof define !== 'undefined' && define.amd) {
+        define(function() {
+            return factory(global, global.document)
+        })
+    } else if (typeof module !== 'undefined' && module.exports) {
+        module.exports = factory(global, global.document)
+    } else {
+        global.ClassName = factory(global, global.document)
+    }
+)(typeof window !== 'undefined' ? window : this, function(window, document) {
+    'use strict'
+
+    function ClassName {
+        console.log('123')
+    }
+    return ClassName
+})
+
+
+// generator函数自动执行
+function autoRun(gen) {
+    const g = gen.next()
+    function next(data) {
+        const res = g.next(data)
+
+        if (res.done) return
+        res.value(next)
+    }
+
+    next()
+}
+
+
+// 模块执行器  https://mp.weixin.qq.com/s/0sardJQmLiM-1Roff6sscg
+// 白名单函数，允许使用什么
+const ALLOW_LIST = ['console']
+class Module {
+    // 全局exports对象
+    exports = {}
+    wrapper = [
+        'return (function(exports, modules) {',
+        '\n});'
+    ]
+
+    wrap(script) {
+        return `${this.wrapper[0]} ${script} ${this.wrapper[1]}`
+    }
+
+    runInContext(code) {
+        code = `width (sandbox) {${code}}`
+        const fn = new Function('sandbox', code)
+        return (sandbox) => {
+            const proxy = new Proxy(sandbox, {
+                has(target, key) {
+                    if (!ALLOW_LIST.includes(key)) { return true }
+                },
+                get(target, key, receiver) {
+                    if (key === Symbol.unscopables) return undefined
+
+                    Reflect.get(target, key, receiver)
+                }
+            })
+
+            return fn(proxy)
+        }
+    }
+
+    compile(content) {
+        const wrapper = this.wrap(content)
+        const compiledWrapper = this.runInContext(wrapper)({})
+        compiledWrapper.call(this.exports, this.exports, this)
+    }
+}
+
+// 测试执行
+function getModuleFromString(code) {
+    const scanModule = new Module()
+    scanModule.compile(code)
+    return scanModule.exports
+}
+
+const module = getModuleFromString(`
+module.exports = { 
+  name : 'ConardLi',
+  action : function(){
+    console.log(this.name);
+  }
+};
+`);
+
+module.action(); // ConardLi

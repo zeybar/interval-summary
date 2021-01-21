@@ -1,0 +1,641 @@
+﻿<html>
+ <head>
+  <title>数独解题程序</title>
+<meta http-equiv="Content-Type" content="text/html; charset=GBK" />
+  <script>
+   function keygo(evt,obj){
+       key = window .event?evt.keyCode:evt.which;
+       var next=obj.tabIndex ;
+       var inputs=document.getElementsByTagName("input");
+       if (key==38){//↑
+           if (next -9>=0 ) {
+               inputs[next-9].select()
+           }
+       }
+       if (key==40){//↓
+           if (next +9<81 ) {
+               inputs[next+9].select()
+           }
+       }
+       if (key==37){//←
+           if (next -1>=0 ) {
+               inputs[next-1].select()
+           }
+       }
+       if (key==39){//→
+           if(next+1<81)inputs[next+1].select();
+       }
+   }
+  </script>
+ </head>
+<body onload="init();">
+<div id="sodukuTable"></div><input type=button name="cal" onclick="calculate()" value="计算">
+<input type=button name="clear" onclick="clearGrid()" value="清空">
+<br><span><textarea id="gtxt" cols="19" rows="10">004502006
+000000005
+002014007
+008000012
+070080050
+930020700
+600190200
+020000000
+300208500</textarea></span>
+<input type=button name="cal" onclick="paste()" value="粘贴" >可以文本拷贝到下框中后点粘贴，从左到右从上往下的81个数字序列，未填为0，中间非数字字符将忽略<br>
+<span></span><br><span id="statusDiv"></span><span id="log"></span>
+  <script>
+   var maxRow =9;
+   var maxCol = 9;
+   var strTbody = ["<table id='sodukuTable' border='0'><tbody>"];
+   for(var i = 0; i < maxRow; i++){
+    strTbody.push("<tr>");
+     for(var j = 0; j < maxCol; j++){
+      strTbody.push("<td style='border-left:"+(j%3==0?1:0)
+            +"px solid black ;border-right:"+(j%3==2?1:0)
+            +"px solid black;border-top:"+(i%3==0?1:0)
+            +"px solid black;border-bottom:"+(i%3==2?1:0)+"px solid black;' ><input style='width:20px;' tabindex='"+(i*9+j)
+        +"'onclick='check(this);' onKeyUp='return keygo(event,this)'type='text' id='input"+(i*9+j)+"'name='n"+(i*9+j)+"'value='"+i+j+"' ></td>");
+     }
+    strTbody.push("</tr>");
+   }
+   strTbody.push("</tbody></table>");
+   var sTbody = ["<table border='1'><tbody>"];
+   for(var i = 0; i < maxRow; i++){
+    sTbody.push("<tr>");
+     for(var j = 0; j < maxCol; j++){
+      sTbody.push("<td style='border-left:"+(j%3==0?1:0)
+            +"px solid black ;border-right:"+(j%3==2?1:0)
+            +"px solid black;border-top:"+(i%3==0?1:0)
+            +"px solid black;border-bottom:"+(i%3==2?1:0)+"px solid black;'><div style='width:25px;height:25px'  id='status"+(i*9+j)+"'name='div"+i+j+"'  ></div></td>");
+     }
+    sTbody.push("</tr>");
+   }
+   sTbody.push("</tbody></table>");
+   var obj = document.getElementById("sodukuTable");
+   obj.innerHTML = strTbody.join("");
+   var obj2 = document.getElementById("statusDiv");
+   var grid=[
+    [5, 7, 0, 1, 2, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 6, 7, 0, 0, 0, 8, 0],
+    [3, 0, 4, 0, 0, 9, 0, 7, 0],
+    [0, 2, 0, 0, 7, 0, 0, 5, 0],
+    [0, 1, 0, 3, 0, 0, 9, 0, 2],
+    [0, 8, 0, 0, 0, 2, 1, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 5, 4, 0, 6, 3]];
+   var candidatNum=[];
+   var columns=[];
+   var rows=[];
+   var blook=[];
+   var papers=0;
+   var discards=0;
+   var success=false;
+   var steps = new Array();
+   var log1 = document.getElementById("statusDiv");
+
+function Step(current1,arrys){
+        this.temp1=new Array();
+        this.step=[arrys[0],arrys[1],arrys[2]];
+        for (var i = 0; i < 9; i++)
+            {
+                this.temp1[i]=new Array();
+                for (var j = 0; j < 9; j++)
+                    {
+                    this.temp1[i][j]=current1[i][j];
+                    }
+                }
+}
+out(grid);
+init();
+
+function push( current1,  i,  j,  n) {
+        var s = new Step(current1, [ i, j, n ]);
+        steps.push(s);
+}
+function pop(){
+        var step = steps.pop();
+        discards ++;
+        grid=step.temp1;
+        grid[step.step[0]][step.step[1]] = step.step[2];
+                var timeline = document.getElementById('PaperList');
+                timeline.value += ('discard: ['+discards+']:['+papers+']\n');
+                timeline.scrollTop = timeline.scrollHeight;
+        return step;
+}
+
+function check(obj){
+    if(obj.value==0)return;
+    for(var i=0;i<9;i++){
+        for(var j=0;j<9;j++){
+            var text = document.getElementById("input"+(i*9+j));
+            if(text.value==obj.value){
+                text.style.background="green";
+            }else{
+                text.style.background="";
+            }
+        }
+
+    }
+
+}
+function CheckNumInput(array,num,  x,  y)  {
+    //  目标:
+    //      冲突检查  参数 array:矩阵 num:检测值 x/y:检测位置
+    //      行列宫均无冲突,return true;
+    //            发现冲突,return false;
+    if (((rows[x] & (1 << num)) == 0) && (columns[y] & (1 << num)) == 0
+        && (blook[parseInt(x / 3) * 3 + parseInt(y / 3)] & (1 << num)) == 0) {
+        return true;
+        }
+    return false;
+}
+
+function out(array){
+    var result=true;
+    for (var i = 0; i < 9; i++)
+        {
+            for (var j = 0; j < 9; j++)
+            {
+        document.getElementById("input"+(i*9+j)).value=array[i][j];
+                if(array[i][j]==0)result=false;
+            }
+        }
+        return result;
+}
+function setOne(){
+    var result = false;
+    //目标:
+    //    遍历矩阵,当前是否可以简单刷新,或者已经可以发现出错.
+    for (var i = 0; i < 9; i++) {
+        for (var j = 0; j < 9; j++) {
+            //目标:
+            // (grid[i][j] == 0 && candidatNum[i][j][0] == 0)  >> 没有候选数字,出错了
+            // (candidatNum[i][j][0] == 1)                     >> 候选数字唯一
+            // CheckNumInput(grid,candidatNum[i][j][10],i,j)   >> 检查此数字是否符合逻辑
+            // 判断 没有候选数字||最后一个候选数字不符合逻辑的条件,  从这里回退或者返回出错
+            if (grid[i][j] == 0 && candidatNum[i][j][0] == 0||
+               (candidatNum[i][j][0] == 1&&!CheckNumInput(grid,candidatNum[i][j][10],i,j))) {
+                    if (grid[i][j] == 0) {
+                       result = false;
+                    }
+                    if (steps.length>0) {// 回退
+                        pop();           // 当前标签已经被证明逻辑错误,废弃
+                        return true;
+                    } else {
+                        if (!success) {
+                            alert("栈为空 结束！");    //题目出错,结束
+                            }
+                        return false;
+                    }
+            }
+            if (candidatNum[i][j][0] == 1) {              //唯一选择
+                grid[i][j] = candidatNum[i][j][10];       //  更新矩阵
+                refreshStat3(candidatNum[i][j][10],i,j);  //  更新行列宫
+                candidatNum[i][j][0] = 0;                 //  标记已选
+                result = true;
+                continue;
+            }
+
+        }
+    }
+    if (result == false) { //对于(candidatNum[i][j][0] != 1)的情况,进行筛选
+        return choose();
+    }
+    return result;
+}
+function refreshStat3( num, x, y) {   //  更新行列宫
+        rows[x] |= 1<<num;
+        columns[y] |= 1<<num;
+        blook[parseInt(x / 3) * 3 + parseInt(y / 3)] |= 1 << num ;
+
+}
+/*********************
+ * 矩阵 数据分析
+ * 统计 剩余可选项
+ *********************/
+function refreshStat(){
+    var over = true;
+    //  目标:
+    //      分解行/列/宫
+    for (var i = 0; i < 9; i++) {
+        rows[i] = 0;    //行
+        columns[i] = 0; //列
+        blook[i] = 0;   //宫
+        for (var j = 0; j < 9; j++) {
+            if (grid[i][j] != 0) {
+                rows[i] |= 1 << grid[i][j];
+            } else {
+                rows[i] &= ~(1 << grid[i][j]);
+            }
+            if (grid[j][i] != 0) {
+                columns[i] |= 1 << grid[j][i];
+            } else {
+                columns[i] &= ~(1 << grid[j][i]);
+            }
+            if (grid[parseInt(i / 3) * 3 + parseInt(j / 3)][i % 3 * 3 + j % 3] != 0) {
+                blook[i] |= 1 << grid[parseInt(i / 3 )* 3 + parseInt(j / 3)][i % 3 * 3 + j % 3];
+            }
+        }
+    }
+    //  目标:
+    //      遍历矩阵,进行候选标记candidatNum[i][j][0]
+    //      candidatNum[i][j][0] = 0;    >>>>    已有确定值
+    //      candidatNum[i][j][0] = k;    >>>>    可能值数目
+    //      candidatNum[i][j][1] = 987654321x    2进制数位表示的可选数字
+    for (var i = 0; i < 9; i++) {
+        for (var j = 0; j < 9; j++) {
+        if (grid[i][j] != 0) {
+            candidatNum[i][j][0] = 0;
+            continue;
+        }
+        var size = 0;
+        over = false;
+        for (var k = 1; k < 10; k++) {
+            if (CheckNumInput(grid, k, i, j)) {
+                candidatNum[i][j][1] |= 1 << k;
+                candidatNum[i][j][10] = k;
+                over = false;
+                size++;
+            } else {
+                candidatNum[i][j][1] &= ~(1 << k);
+            }
+        }
+        candidatNum[i][j][0] = size;  //标记剩余选项数目
+    }
+    }
+    return over;
+}
+
+function calculate(){  //功能入口
+    //读取数据
+    var start=new Date();
+    for (var i = 0; i < 9; i++)
+        {
+            for (var j = 0; j < 9; j++)
+            {
+                var text = document.getElementById("input"+(i*9+j));
+                grid[i][j]=parseInt(text.value);
+        }
+    }
+
+    //刷新网格
+    refreshStat();
+    out(grid);
+    //计算矩阵
+    while(true){
+        var a=setOne();
+        var b=refreshStat();
+        if(!a||b){ //如果 a==false 或者 b==ture,则可以跳出循环
+            break;
+        }
+    }
+    out(grid);    //答案
+    alert("用时："+(new Date()-start)+"ms");
+    success = true;
+    //计算结束
+
+    //验证答案是否唯一
+    if (papers != discards){
+            if (steps.length>0) {// 回退
+                pop();           // 当前标签废弃
+                //计算矩阵
+                while(true){
+                    var a=setOne();
+                    var b=refreshStat();
+                    if(!a||b){ //如果 a==false 或者 b==ture,则可以跳出循环
+                        break;
+                    }
+                }
+                if (b) {
+                    alert("答案不唯一！记录！");
+                    out(grid);    //答案
+                    }
+                else {
+                    alert("答案唯一！！");    //答案唯一
+                }
+            } else {
+                alert("出错 结束！");
+                return false;
+            }
+    }
+}
+function clearGrid(){
+    for (var i = 0; i < 9; i++){
+        for (var j = 0; j < 9; j++){
+            grid[i][j]=0;
+            document.getElementById("input"+(i*9+j)).value=grid[i][j];
+        }
+    }
+    out(grid);
+}
+function init(){
+     for (var i = 0; i < 9; i++)
+        {    candidatNum[i]=new Array();
+
+            for (var j = 0; j < 9; j++)
+            {    candidatNum[i][j]=new Array();
+
+        for (var k = 0; k < 11; k++)
+                {    candidatNum[i][j][k]=0;
+        }
+        }
+    }
+}
+function choose() {
+    //目标:
+    //    遍历矩阵,从当前位置建立搜索分支.
+    var binarynode = false;
+    for (var i = 0; i < 9; i++) {
+        for (var j = 0; j < 9; j++) {
+    //      2叉树分支:
+    //      如果在某位置有两种可能,选项1/选项2
+    //      则假设是选项1,并进行验算,同时按选项2生成一个新的标签
+            if (candidatNum[i][j][0] == 2) {// 有2种选择
+                binarynode = true;
+                var found = -1;
+                for (var k = 1; k < 10; k++) {
+                    if  ((candidatNum[i][j][1] & (1 << k)) > 0) {
+                        if (found > 0) {
+                            papers ++;
+                            var timeline = document.getElementById('PaperList');
+                            timeline.value += ('add papers:'+papers+':'+i+' '+j+' '+k+'\n');
+                            timeline.scrollTop = timeline.scrollHeight;
+                            push(grid, i, j, k);
+                        }else{
+                            found = k;
+                        }
+                    }
+                }
+                grid[i][j] = found;
+                candidatNum[i][j][0] = 0; // 在当前标签上标记已选
+                            var timeline = document.getElementById('PaperList');
+                            timeline.value += ('TRY CURRENT:'+i+' '+j+' '+found+'\n');
+                            timeline.scrollTop = timeline.scrollHeight;
+                return true;
+            }
+        }
+    }
+    if (!binarynode) {
+    var timeline = document.getElementById('PaperList');
+    timeline.value += ('2叉分支未找到!\n');
+    timeline.scrollTop = timeline.scrollHeight;
+        for (var i = 0; i < 9; i++) {
+            for (var j = 0; j < 9; j++) {
+        // 2叉树查找失败时，启动3叉树分支，作为扩充，还可以启动3叉树分支：
+        //      如果在某位置有三种可能,选项1/选项2/选项3
+        //      则假设是选项1,并进行验算,同时按选项2生成一个新的标签
+                if (candidatNum[i][j][0] == 3) {// 有3种选择
+                            var timeline = document.getElementById('PaperList');
+                            timeline.value += ('发现3叉分支!\n');
+                            timeline.scrollTop = timeline.scrollHeight;
+                    binarynode = true;
+                    var found = -1;
+                    for (var k = 1; k < 10; k++) {
+                        if  ((candidatNum[i][j][1] & (1 << k)) > 0) {
+                            if (found > 0) {
+                                papers ++;
+                            var timeline = document.getElementById('PaperList');
+                            timeline.value += ('add papers:'+papers+':'+i+' '+j+' '+k+'\n');
+                            timeline.scrollTop = timeline.scrollHeight;
+                                push(grid, i, j, k);
+                            }else{
+                                found = k;
+                            }
+                        }
+                    }
+                    grid[i][j] = found;
+                    candidatNum[i][j][0] = 0; // 在当前标签上标记已选
+                            var timeline = document.getElementById('PaperList');
+                            timeline.value += ('TRY CURRENT:'+i+' '+j+' '+found+'\n');
+                            timeline.scrollTop = timeline.scrollHeight;
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+function paste(){
+    var gridstr= document.getElementById("gtxt").value;
+    var a = gridstr.replace(/[^0-9]/g,'');
+    if(a.length!=81){
+       alert("数据格式不正确:\n"+gridstr);
+       return;
+    }
+    for (var i = 0; i < 9; i++)
+        {
+            for (var j = 0; j < 9; j++){
+                grid[i][j]=a.charAt(i*9+j);
+                document.getElementById("input"+(i*9+j)).value=grid[i][j];
+        }
+    }
+    out(grid);
+    papers = 0;
+    discards = 0;
+    success = false;
+    steps = new Array();
+}
+  </script>
+  建议使用IE浏览器,F12开启调试模式<br>
+<br><span>
+<textarea id="PaperList" cols="30" rows="20" style="position:absolute;left:550px;"></textarea></span>
+<script>
+    var chess;//棋盘所有棋子的状态
+var chessStack = [];//缓存点
+//创建棋盘
+function creatChess()
+{
+    chess = [];
+    for (var i = 0; i < 9; i++)
+    {
+        chess[i] = [];
+        for (var j = 0; j < 9; j++)
+        {
+            chess[i][j] = {num:0,fixed:false,temp:[1,2,3,4,5,6,7,8,9]};
+        }
+    }
+}
+
+//打印棋盘
+function printChess()
+{
+    var say = "";
+    for (var i = 0; i < 9; i++)
+    {
+        for (var j = 0; j < 9; j++)
+        {
+            say += chess[i][j].num;
+        }
+        say += '\n';
+    }
+    console.log(say);
+}
+
+//预先设置互不影响的九宫格位置数字
+function setArea(a,b)
+{
+    var temp = [1,2,3,4,5,6,7,8,9];//每个小九宫格包含的九个数字
+    for (var i = a; i < b; i++)
+    {
+        for (var j = a; j < b; j++)
+        {
+            var len = temp.length;//temp剩下的长度
+            var index = getRandom(len);//随机抽取一个
+            chess[i][j].num = temp[index];//赋值
+            chess[i][j].fixed = true;//赋值
+            temp.splice(index,1);//删除已赋值的
+        }
+    }
+}
+
+//设定数字 可以求解
+function setPre(r,c,v)
+{
+    chess[r][c] = {num:v,fixed:true,temp:[]};
+}
+
+//获取一个随机数字下标
+function getRandom(a)
+{
+    return Math.floor(Math.random()*a);
+}
+
+//初始化棋盘
+function chessInit()
+{
+    for (var i = 0; i < 9; i++)
+    {
+        for (var j = 0; j < 9; )
+        {
+            //当数字确定了 则下一个 不然随机取一个
+            if (!chess[i][j].fixed)
+            {
+                var len = chess[i][j].temp.length;//temp剩下的长度
+                //当还有可选数字
+                if (len > 0)
+                {
+                    var index = getRandom(len);//随机抽取一个
+                    chess[i][j].num = chess[i][j].temp[index];//赋值
+                    chess[i][j].temp.splice(index,1);//删除已赋值的
+                    chessStack.push([i,j,JSON.parse(JSON.stringify(chess))]);//存储
+                    chess[i][j].fixed = true;//变为确定
+                    if(!checkTempNum(i,j))
+                    {
+                        var cs = chessStack.pop();//退格
+                        i = cs[0];
+                        j = cs[1];
+                        chess = cs[2];//取出棋盘存储点
+                    }
+                }
+                else
+                {
+                    // 当没有可选数字了
+                    var cs = chessStack.pop();//退格
+                    i = cs[0];
+                    j = cs[1];
+                    chess = cs[2];//取出棋盘存储点
+                }
+            }
+            else
+            {
+                j++;//进一个
+            }
+        }
+    }
+}
+
+
+//删除特定元素
+function removeByValue(r,c,v)
+{
+    if (chess[r][c].num == v)
+    {
+        return false;//冲突了
+    }
+    if (chess[r][c].fixed)
+    {
+        return true;//已经确定了 则无需删除了
+    }
+    var len = chess[r][c].temp.length;
+    for (var i = 0; i < len; i++)
+    {
+        if (chess[r][c].temp[i] == v)
+        {
+            chess[r][c].temp.splice(i,1);//删除备选数字
+            break;//退出
+        }
+    }
+    return chess[r][c].temp.length==0?false:true;//没有确定而且没有备选元素了 那么返回错误
+}
+
+//移除相关20格备选列表某数字
+function checkTempNum(r,c)
+{
+    var i,j;
+    var num = chess[r][c].num;//要移除的数字
+    //检查列
+    for (i = 0; i < 9 ; i++)
+    {
+        if (i != r && !removeByValue(i,c,num)) return false;//移除备选数字和判定数字合法性
+    }
+    //检查行
+    for (j = 0; j < 9 ; j++)
+    {
+        if(j != c && !removeByValue(r,j,num)) return false;//移除备选数字和判定数字合法性
+    }
+    //检查小九宫
+    var left = Math.floor(r/3)*3;//得出小九宫的左上角坐标
+    var top = Math.floor(c/3)*3;//得出小九宫的左上角坐标
+    for (i = left; i < left+3; i++)
+    {
+        for (j = top; j < top+3; j++)
+        {
+            if (i == r && j == c)
+            {
+                continue;//同一个格子跳过
+            }
+            if(!removeByValue(i,j,num)) return false;//移除备选数字和判定数字合法性
+        }
+    }
+    return true;
+}
+
+
+//初始化
+function chess()
+{
+    creatChess();//创建棋盘
+    // setArea(0,3);//随机设置左上角九宫格数字
+    // setArea(3,6);//随机设置中间九宫格数字
+    // setArea(6,9);//随机设置右下角九宫格数字
+    setPre(0,2,5);
+    setPre(0,3,3);
+    setPre(1,0,8);
+    setPre(1,7,2);
+    setPre(2,1,7);
+    setPre(2,4,1);
+    setPre(2,6,5);
+    setPre(3,0,4);
+    setPre(3,5,5);
+    setPre(3,6,3);
+    setPre(4,1,1);
+    setPre(4,4,7);
+    setPre(4,8,6);
+    setPre(5,2,3);
+    setPre(5,3,2);
+    setPre(5,7,8);
+    setPre(6,1,6);
+    setPre(6,3,5);
+    setPre(6,8,9);
+    setPre(7,2,4);
+    setPre(7,7,3);
+    setPre(8,5,9);
+    setPre(8,6,7);
+    chessInit();//初始化棋盘
+    printChess();//打印棋盘
+}
+
+chess();
+</script>
+ </body>
+</html>
