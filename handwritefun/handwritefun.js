@@ -1016,6 +1016,35 @@ function autoRun(gen) {
     next()
 }
 
+// async函数本质
+function fn(args) {
+    return spawn(function *(){})
+}
+
+// generator自执行函数
+function spawn(genFn) {
+    return new Promise((resolve, reject) => {
+        const gen = genFn()
+
+        function step(nextFn){
+            try {
+                const next = nextFn()
+            } catch(e) {
+                reject(e)
+            }
+
+            if (next.done) return resolve(next.value)
+
+            Promise.resolve(next.value).then(v => {
+                step(() => gen.next(v))
+            }, e => {
+                step(() => gen.thow(e))
+            })
+        }
+        step(() => gen.next(undefined))
+    })
+}
+
 
 // 模块执行器  https://mp.weixin.qq.com/s/0sardJQmLiM-1Roff6sscg
 // 白名单函数，允许使用什么
@@ -1075,3 +1104,23 @@ module.exports = {
 `);
 
 module.action(); // ConardLi
+
+
+
+// Iterator对象
+function getIterator(list) {
+    let i = 0;
+    return {
+        next: function() {
+            const done = i >= list.length
+            const value = done ? undefined : list[i++]
+
+            return { done, value }
+        },
+        return() {
+            return {
+                done: true,
+            }
+        }
+    }
+}
