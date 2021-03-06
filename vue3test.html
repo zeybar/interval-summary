@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  
+  <div id="app"></div>
+  <div id="btn">click</div>
+  <script src="./vue3.js"></script>
+  <script>
+    const root = document.getElementById('app')
+    const btn = document.getElementById('btn')
+    // 响应式封装
+    let obj = reactive({
+      name: 'Benson',
+      age: 24,
+      num: { count: 1 },
+    })
+    
+    // 计算属性
+    let double = computed(()=>obj.age*2)
+    
+    // 副作用，依赖函数
+    effect((x)=>{
+      root.innerHTML = `双倍${double.value}`
+    })
+    effect((x)=>{
+      console.log('数据变了', obj.age)
+    })
+
+    btn.addEventListener('click',()=>{
+      obj.age+=1;
+    //   obj.num.count += 1; // 测试 reactive 递归封装 Proxy 的特点
+    },false)
+  </script>
+</body>
+</html>

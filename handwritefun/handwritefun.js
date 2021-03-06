@@ -963,7 +963,7 @@ function caculateFps() {
     requestAnimationFrame(loop)
 }
 
-// 计算fps
+// 计算fps  帧率
 function calcFps(debounce = 1000){
     let lastTime = Date.now();
     let count = 0; // 记录decounce周期内渲染次数
@@ -1123,4 +1123,111 @@ function getIterator(list) {
             }
         }
     }
+}
+
+
+// 计算dom节点深度
+function getDepth(node) {
+    if (node.childNodes.length === 0 || !node.childNodes) return 1;
+    // 获得所有子元素的深度
+    const maxDepth = [...node.childNodes].map((v) => getDepth(v))
+    return 1 + Math.max(...maxDepth)
+}
+
+// flat实现
+// https://juejin.cn/post/6844904025993773063
+// 思路一： concat + 递归
+function flat1(arr) {
+    const res = []
+    arr.forEach(a => {
+        if (Array.isArray(a)) {
+            res = res.concat(flat1(a))
+        } else {
+            res.push(a)
+        }
+    })
+
+    return res
+}
+
+// 简写
+const flat2 = (arr) => [].concat(...arr.map(a => Array.isArray(a) ? [].concat(flat2(a)) : a))
+
+// 思路二： 使用reduce + 递归
+const flat3 = arr => arr.reduce((pre, cur) => pre.concat(Array.isArray(cur) ? flat3(cur): cur))
+
+// 思路三： 使用栈思想
+function flat4(arr) {
+    const result = [];
+    const stack = [...arr];
+    while(stack.length !== 0) {
+        const val = stack.pop()
+        if (Array.isArray(val)) {
+            stack.push(...val)
+        } else {
+            result.unshift(val)
+        }
+    }
+
+    return result
+}
+
+// 思路四： 使用generator实现
+function* flat5(arr, num = 1) {
+    for(const item of arr) {
+        if (Array.isArray(item) && num > 0) {
+            yield flat5(item, num - 1)
+        } else {
+            yield item
+        }
+    }
+}
+
+// 数组全排列
+function permutation(arr){
+    if (arr.length == 1)
+      return arr;
+    else if (arr.length == 2)
+      return [[arr[0],arr[1]],[arr[1],arr[0]]];
+    else {
+      var temp = [];
+      for (var i = 0; i < arr.length; i++) {
+        var save = arr[i];
+        arr.splice(i, 1);//取出arr[i]
+        var res = permutation(arr);//递归排列arr[0],arr[1],...,arr[i-1],arr[i+1],...,arr[n]
+        arr.splice(i, 0, save);//将arr[j]放入数组，保持原来的位置
+        for (var j = 0; j < res.length; j++) {
+          res[j].push(arr[i]);
+          temp.push(res[j]);//将arr[j]组合起来
+        }
+      }
+      return temp;
+    }
+  }
+
+
+//在一个未知宽度的父元素内如何创建一个等边正方形, 主要是padding
+//   display: block;
+//   width: 100%;
+//   padding-bottom: 100%;
+
+
+// url -> object  && object -> url
+// url和对象互转
+function paramsStringToObject(url) {
+    if (!url) return {}
+    const resObject = Object.create(null)
+    let arr = [];
+    if (url.includes('&')) {
+        arr = url.split('=')
+    } else {
+        arr = [url]
+    }
+
+    arr.forEach((item) => {
+        const [key, val] = item.split('=')
+        resObject[key] = decodeURIComponent(val)
+    })
+
+    return resObject
 }
