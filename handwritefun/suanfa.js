@@ -73,7 +73,7 @@ function rob(nums) {
     // 把存下来的赋值给上一家
     first = third
   }
- 
+
   return second
 }
 
@@ -114,6 +114,44 @@ function coinChange(coins, amount) {
     }
   }
   return dp[amount] === Infinity ? -1 : dp[amount]
+}
+
+
+// 查询链表中是否有环
+function hasCycle(head) {
+  let fast, slow
+  fast = slow = head
+
+  while(fast !== null && fast.next !== null) {
+    fast = fast.next.next
+    slow = slow.next
+
+    if (fast === slow) return true
+  }
+
+  return false
+}
+
+function indexOfCycle(head) {
+  let fast, slow
+  fast = slow = head
+
+  while(fast !== null && fast.next !== null) {
+    fast = fast.next.next
+    slow = slow.next
+
+    if (fast === slow) break
+  }
+
+  // 重新出发
+  slow = head
+
+  while(slow !== fast) {
+    slow = slow.next
+    fast = fast.next
+  }
+
+  return slow
 }
 
 

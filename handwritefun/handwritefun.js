@@ -112,7 +112,7 @@ Function.prototype.bind = function(context) {
         fn.apply(this.constructor === callMeFn ? this : context, [...args, ...arguments])
     }
     // 这里把空白函数的prototype设置成使用bind的并实例化fn复制给bound的prototype
-    // 
+    //
     fn.prototype = callMeFn.prototype;
     bound.prototype = new fn();
     return bound;
@@ -182,10 +182,10 @@ Object.create = function(proto, prototypiesObject) {
 // Object.create 如果传入对象并设置值，不设置
 const o = Object.create(Object.prototype, {
     // foo会成为所创建对象的数据属性
-    foo: { 
+    foo: {
       writable:true,
       configurable:true,
-      value: "hello" 
+      value: "hello"
     },
     // bar会成为所创建对象的访问器属性
     bar: {
@@ -578,7 +578,7 @@ function throttle(fn, wait) {
         // 判断上次触发的时间和本次触发的时间差是否小于时间间隔
         if (now - prev > wait) {
             // 如果小于，则为本次触发操作设立一个新的定时器
-            // 定时器时间结束后执行函数 fn 
+            // 定时器时间结束后执行函数 fn
             if (timer) clearTimeout(timer)
 
             timer = setTimeout(() => {
@@ -704,7 +704,7 @@ class CustomPromise {
     static resolve(value) {
         return value instanceof CustomPromise ? value : new CustomPromise((resolve) => resolve(value))
     }
-    
+
     static reject(value) {
         return value instanceof CustomPromise ? value : new CustomPromise((resolve, reject) => reject(value))
     }
@@ -982,25 +982,25 @@ function calcFps(debounce = 1000){
 
 
 // 兼容amd cmd commonjs windows的写法
-function(global, factory)(
-    // amd
-    if (typeof define !== 'undefined' && define.amd) {
-        define(function() {
-            return factory(global, global.document)
-        })
-    } else if (typeof module !== 'undefined' && module.exports) {
-        module.exports = factory(global, global.document)
-    } else {
-        global.ClassName = factory(global, global.document)
-    }
-)(typeof window !== 'undefined' ? window : this, function(window, document) {
-    'use strict'
+// function(global, factory)(
+//     // amd
+//     if (typeof define !== 'undefined' && define.amd) {
+//         define(function() {
+//             return factory(global, global.document)
+//         })
+//     } else if (typeof module !== 'undefined' && module.exports) {
+//         module.exports = factory(global, global.document)
+//     } else {
+//         global.ClassName = factory(global, global.document)
+//     }
+// )(typeof window !== 'undefined' ? window : this, function(window, document) {
+//     'use strict'
 
-    function ClassName {
-        console.log('123')
-    }
-    return ClassName
-})
+//     function ClassName {
+//         console.log('123')
+//     }
+//     return ClassName
+// })
 
 
 // generator函数自动执行
@@ -1095,7 +1095,7 @@ function getModuleFromString(code) {
 }
 
 const module = getModuleFromString(`
-module.exports = { 
+module.exports = {
   name : 'ConardLi',
   action : function(){
     console.log(this.name);
