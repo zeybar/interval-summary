@@ -13,6 +13,7 @@
     </style>
 </head>
 <body>
+    <div id="el">{{ message }}</div>
     <div id="app">
         <!-- {{ text }} -->
         <!-- <my-test @test="this.alert(1)" @click="this.alert(1)"></my-test> -->
@@ -34,20 +35,19 @@
                }
            },
            el: '#app',
-        //    components: {
-        //        'my-test': {
-        //            render: function(_c) {
-        //                return _c('h1', {
-        //                    on: {
-        //                        'click': function(e) {
-        //                             myVueApp.$emit('test');
-        //                        }
-        //                    }
-        //                }, ['testtest111'])
-        //            }
-        //        }
-        //    }
        });
+
+       const vm = new Vue({
+        el: '#el',
+        data: {
+            message: '123'
+        }
+        })
+        vm.message = 'nihao';
+        // vm.$el.textContent === 'nihao';
+        vm.$nextTick(() => {
+            console.log(':::', vm.$el.textContent, vm.$el.textContent === 'nihao')
+        })
     </script>
 </body>
 </html>
