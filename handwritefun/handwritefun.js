@@ -1027,8 +1027,9 @@ function spawn(genFn) {
         const gen = genFn()
 
         function step(nextFn){
+            let next;
             try {
-                const next = nextFn()
+                next = nextFn()
             } catch(e) {
                 reject(e)
             }
