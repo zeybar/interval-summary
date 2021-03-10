@@ -44,7 +44,8 @@
         }
         })
         vm.message = 'nihao';
-        // vm.$el.textContent === 'nihao';
+        vm.$el.textContent === 'nihao';
+        console.log(':::', vm.message, vm.$el.textContent, vm.$el.textContent === 'nihao')
         vm.$nextTick(() => {
             console.log(':::', vm.$el.textContent, vm.$el.textContent === 'nihao')
         })
