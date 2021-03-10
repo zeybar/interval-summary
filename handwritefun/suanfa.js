@@ -78,7 +78,7 @@ function rob(nums) {
 }
 
 
-  // 3. 找出二位矩阵中面积最大的1
+// 3. 找出二位矩阵中面积最大的1
 
 //思路一： 动态规划，先找出1，然后向上，向左找出有1的值的个数
 function maxSquare (matrix) {
@@ -117,7 +117,9 @@ function coinChange(coins, amount) {
 }
 
 
-// 查询链表中是否有环
+// 5. 查询链表中是否有环
+
+// 思路
 function hasCycle(head) {
   let fast, slow
   fast = slow = head
@@ -132,6 +134,7 @@ function hasCycle(head) {
   return false
 }
 
+// 查找环的位置
 function indexOfCycle(head) {
   let fast, slow
   fast = slow = head
@@ -153,6 +156,31 @@ function indexOfCycle(head) {
 
   return slow
 }
+
+// 6.羊生羊问题，农场买了一只小羊，这种羊在第一年是小羊，第二年的年底会生一只小羊，第三年不生小羊，第四年的年底还会再生下一只小羊，第五年就死掉了。要计算N年时农场里有几只羊
+
+// 循环解决
+function sleepNum(n){
+  let count = 1;
+  for(let i = 0;i < n;i++) {
+    if (i === 2 || i === 4) {
+      count += sleepNum(n - i)
+    }
+    if (i === 5) {
+      count--
+      break;
+    }
+  }
+
+  return count;
+}
+
+
+// 7.排序
+// 7.1 快排
+// 核心是分而治之，找一个中心点，化繁为简
+
+
 
 
 
