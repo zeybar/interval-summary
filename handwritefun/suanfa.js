@@ -179,8 +179,31 @@ function sleepNum(n){
 // 7.排序
 // 7.1 快排
 // 核心是分而治之，找一个中心点，化繁为简
+function quickSort(arr) {
+  if (arr < 2) return [...arr]
+  const len = arr.length
 
+  let left = []
+  let middle = []
+  let right = []
 
+  const randomVal = Math.round(Math.random() * len)
+  
+  for(let i = 0;i < len;i++) {
+    const val = arr[i]
+
+    if (val > randomVal) right.push(val)
+    if (val < randomVal) left.push(val)
+    if (val === randomVal) middle.push(val)
+  }
+
+  return quickSort(left).concat(middle, quickSort(right))
+}
+
+// 7.2 冒泡排序
+function bubleSort(arr) {
+  
+}
 
 
 
