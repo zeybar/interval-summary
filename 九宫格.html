@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>九宫格</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        ul,li {
+            list-style: none;
+        }
+        .box1 {
+            display: grid;
+            gap: 1px;
+            width: 600px;
+            height: 600px;
+            margin: 0 auto 30px;
+            background: #ccc;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
+            border: 1px solid #ccc;
+        }
+
+        .box1 li {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #fff;
+        }
+
+        .box1 li:hover {
+            outline: 1px solid red;
+        }
+        
+        .box2 {
+            display: flex;
+            flex-wrap: wrap;
+            width: 600px;
+            margin: 0 auto 30px;
+        }
+
+        .box2 li {
+            display: grid;
+            place-items: center;
+            box-sizing: border-box;
+            width: 200px;
+            height: 200px;
+            border: 1px solid #000;
+            margin: -1px 0 0 -1px;
+        }
+        .box2 li:nth-child(3n + 1) {
+            margin-left: 0;
+        }
+        .box2 li:nth-child(-n + 3) {
+            margin-top: 0;
+        }
+        .box2 li:hover {
+            color: red;
+            border: 1px solid;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <ul class="box1">
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+        <li>4</li>
+        <li>5</li>
+        <li>6</li>
+        <li>7</li>
+        <li>8</li>
+        <li>9</li>
+    </ul>
+    <ul class="box2">
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+        <li>4</li>
+        <li>5</li>
+        <li>6</li>
+        <li>7</li>
+        <li>8</li>
+        <li>9</li>
+    </ul>
+</body>
+</html>
