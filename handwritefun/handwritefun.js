@@ -558,6 +558,23 @@ function debounce2(fn, wait) {
     }
 }
 
+// 装饰器模式写法
+function debounce4(time) {
+    let timer;
+    return function (target, name, description) {
+        const fn = description.value;
+        if (typeof fn === 'function') {
+            description.value = function(...args) {
+                if (timer) clearTimeout(timer)
+
+                timer = setTimeout(() => {
+                    fn.apply(this, args)
+                }, time)
+            }
+        }
+    }
+}
+
 // 节流函数
 function throttle(fn, wait) {
     const prev = 0;
@@ -593,6 +610,32 @@ function throttle(fn, wait) {
         }
     }
 }
+
+// 节流函数写成装饰器
+function throttle(wait) {
+    let prev = Date.now();
+
+    return function (target, name, description) {
+        const fn = description.value;
+
+        if (typeof fn === 'function') {
+            description.value = function(...args) {
+                let now = Date.now();
+
+                if (now - prev > wait) {
+                    fn.apply(this, args)
+                    prev = now;
+                }
+            }
+        }
+    }
+}
+/*
+使用
+
+@throttle(50)
+scroll() {}
+*/
 
 
 // 定义枚举常量
